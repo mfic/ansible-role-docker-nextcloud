@@ -46,6 +46,8 @@ services:
       MYSQL_USER: "{{ db_mysql_user }}"
       MYSQL_PASSWORD: "{{ db_mysql_password }}"
       MYSQL_HOST: db
+      REDIS_HOST: redis
+      REDIS_HOST_PORT: 6379
     networks:
       - default
       - webproxy
@@ -82,6 +84,11 @@ services:
       - "traefik.http.routers.{{ nc_router_traefik }}-https.tls.certresolver=cloudflare"
       {% endif %}
 
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    networks:
+      - default
 
 networks:
   webproxy:
