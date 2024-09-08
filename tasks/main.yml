@@ -21,3 +21,23 @@
   ansible.builtin.template:
     src: "conf.d/php.ini"
     dest: "{{ site_working_directory }}/conf.d/php.ini"
+
+- name: Get Traefik container IP from webproxy network
+  shell: docker inspect -f '{{"{{"}} .NetworkSettings.Networks.webproxy.IPAddress {{"}}"}}' traefik-traefik-1
+  register: traefik_container_ip
+  tags:
+    - update_traefik_ip
+
+- name: Show Traefik container IP
+  debug:
+    msg: "Traefik container IP is {{ traefik_container_ip.stdout }}"
+  tags:
+    - update_traefik_ip
+
+- name: Update Nextcloud config.php with Traefik IP
+  lineinfile:
+    path: "{{ site_working_directory }}/{{ nc_volume_config }}/config.php"
+    regexp: "'trusted_proxies' => .*"
+    line: "'trusted_proxies' => ['{{ traefik_container_ip.stdout }}'],"
+  tags:
+    - update_traefik_ip
