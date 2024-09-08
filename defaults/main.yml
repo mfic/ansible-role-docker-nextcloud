@@ -1,0 +1,41 @@
+---
+# defaults file for mfic.docker-nextcloud
+site_working_directory: "/path"
+php_timezone: "UTC"
+traefik_tls_provider: "letsencrypt" #letsencrypt (HTTP-Challange) or cloudflare (DNS-Challange)
+traefik_docker_network: "webproxy"
+db_image: "mariadb"
+db_version: 11
+db_volume_data: "./data/db"
+db_mysql_database: "nextcloud"
+db_mysql_root_password: "supersecurepassword"
+db_mysql_user: "db_user"
+db_mysql_password: "securepassword"
+db_logging:
+  driver: "json-file"
+  max_size: "1m"
+  max_file: "10"
+db_resources_limits:
+  cpus: "0.5"
+  memory: "300M"
+nc_image: "nextcloud"
+nc_version: "latest"
+nc_volume_data: "./data/site/data"
+nc_volume_config: "./data/site/config"
+nc_volume_apps: "./data/site/apps"
+nc_volume_confd: "./conf.d/php.ini"
+nc_admin_user: "admin"
+nc_admin_password: "asecurepassword"
+nc_data_dir: "/var/www/html/data"
+nc_table_prefix: ""
+nc_router_traefik: "nc_domain"
+nc_domains: "Host(`fqdn`)"
+nc_trusted_domains: "fwdn" #Optional space-separated list of domains
+nc_overwriteprotocol: "https"
+nc_logging:
+  driver: "json-file"
+  max_size: "1m"
+  max_file: "10"
+nc_resources_limits:
+  cpus: "0.5"
+  memory: "300M"

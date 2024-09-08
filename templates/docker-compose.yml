@@ -1,0 +1,76 @@
+---
+services:
+  db:
+    image: {{ db_image }}:{{ db_version}}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ db_resources_limits.cpus }}"
+          memory: "{{ db_resources_limits.memory }}"
+    volumes:
+      - {{ db_volume_data }}:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "{{ db_mysql_database }}"
+      MYSQL_ROOT_PASSWORD: "{{ db_mysql_root_password }}"
+      MYSQL_USER: "{{ db_mysql_user }}"
+      MYSQL_PASSWORD: "{{ db_mysql_password }}"
+    logging:
+      driver: "{{ db_logging.driver }}"
+      options:
+        max-size: "{{ db_logging.max_size }}"
+        max-file: "{{ db_logging.max_file }}"
+  cloud:
+    depends_on:
+      - db
+    image: {{ nc_image }}:{{ nc_version }}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ nc_resources_limits.cpus }}"
+          memory: "{{ nc_resources_limits.memory }}"
+    volumes:
+      - {{ nc_volume_data }}:/var/www/html
+      - {{ nc_volume_config }}:/var/www/html/config
+      - {{ nc_volume_apps }}:/var/www/html/apps
+      - {{ nc_volume_confd }}:/usr/local/etc/php/conf.d/php.ini
+    environment:
+      NEXTCLOUD_ADMIN_USER: "{{ nc_admin_user}}"
+      NEXTCLOUD_ADMIN_PASSWORD: "{{ nc_admin_password }}"
+      NEXTCLOUD_DATA_DIR: "{{ nc_data_dir }}"
+      NEXTCLOUD_TABLE_PREFIX: "{{ nc_table_prefix }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "{{ nc_trusted_domains }}"
+      OVERWRITEPROTOCOL: "{{ nc_overwriteprotocol }}"
+      MYSQL_DATABASE: "{{ db_mysql_database }}"
+      MYSQL_USER: "{{ db_mysql_user }}"
+      MYSQL_PASSWORD: "{{ db_mysql_password }}"
+      MYSQL_HOST: db
+    networks:
+      - default
+      - webproxy
+    logging:
+      driver: "{{ nc_logging.driver }}"
+      options:
+        max-size: "{{ nc_logging.max_size }}"
+        max-file: "{{ nc_logging.max_file }}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ traefik_docker_network }}"
+      {% if traefik_tls_provider == "letsencrypt" %}
+- "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.entrypoints=websecure"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.rule={{ nc_domains }}"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.{{ nc_router_traefik }}-http.rule={{ nc_domains }}"
+      - "traefik.http.routers.{{ nc_router_traefik }}-http.entrypoints=web"
+      - "traefik.http.routers.{{ nc_router_traefik }}-http.tls.certresolver=letsencrypt"
+      {% elif traefik_tls_provider == "cloudflare" %}
+- "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.entrypoints=websecure"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.rule={{ nc_domains }}"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.tls.certresolver=cloudflare"
+      {% endif %}
+networks:
+  webproxy:
+    external: true
