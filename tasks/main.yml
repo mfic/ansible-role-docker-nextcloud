@@ -34,10 +34,22 @@
   tags:
     - update_traefik_ip
 
-- name: Update Nextcloud config.php with Traefik IP
-  lineinfile:
+- name: Ensure trusted_proxies and forwarded_for_headers exist in Nextcloud config.php
+  blockinfile:
     path: "{{ site_working_directory }}/{{ nc_volume_config }}/config.php"
-    regexp: "'trusted_proxies' => .*"
-    line: "'trusted_proxies' => ['{{ traefik_container_ip.stdout }}'],"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Trusted Proxies and Forwarded Headers"
+    content: |
+      'trusted_proxies' => ['{{ traefik_container_ip.stdout }}'],
+      'forwarded_for_headers' => ['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP'],
+    insertbefore: "^\\);$"
   tags:
     - update_traefik_ip
+
+- name: Set default phone region in Nextcloud config.php
+  lineinfile:
+    path: "{{ site_working_directory }}/{{ nc_volume_config }}/config.php"
+    regexp: "'default_phone_region' =>"
+    line: "'default_phone_region' => '{{ nc_phone_region_iso_code }}',"
+    insertafter: "'maintenance' =>"
+  notify:
+    - Restart Nextcloud

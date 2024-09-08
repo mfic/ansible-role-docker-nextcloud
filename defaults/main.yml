@@ -39,3 +39,4 @@ nc_logging:
 nc_resources_limits:
   cpus: "0.5"
   memory: "300M"
+nc_phone_region_iso_code: "DE"

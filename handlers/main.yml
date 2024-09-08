@@ -1,2 +1,6 @@
 ---
 # handlers file for mfic.docker-nextcloud
+- name: Restart Nextcloud
+  shell: docker-compose restart cloud
+  args:
+    chdir: "{{ site_working_directory }}"
