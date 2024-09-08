@@ -59,29 +59,30 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network={{ traefik_docker_network }}"
+
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.customrequestheaders.X-Forwarded-For={{ host_ip }}"
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.customrequestheaders.X-Real-IP={{ host_ip }}"
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.stsSeconds=15552000"
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.stsIncludeSubdomains=true"
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.stsPreload=true"
-      
-      # Apply middleware to HTTP and HTTPS routers
-      - "traefik.http.routers.{{ nc_router_traefik }}-https.middlewares={{ nc_router_traefik }}-https@docker"
-      - "traefik.http.routers.{{ nc_router_traefik }}-http.middlewares={{ nc_router_traefik }}-https@docker"
-
       {% if traefik_tls_provider == "letsencrypt" %}
-- "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
+
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
       - "traefik.http.routers.{{ nc_router_traefik }}-https.entrypoints=websecure"
       - "traefik.http.routers.{{ nc_router_traefik }}-https.rule={{ nc_domains }}"
       - "traefik.http.routers.{{ nc_router_traefik }}-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.{{ nc_router_traefik }}-http.rule={{ nc_domains }}"
       - "traefik.http.routers.{{ nc_router_traefik }}-http.entrypoints=web"
       - "traefik.http.routers.{{ nc_router_traefik }}-http.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.middlewares={{ nc_router_traefik }}-https@docker"
+      - "traefik.http.routers.{{ nc_router_traefik }}-http.middlewares={{ nc_router_traefik }}-https@docker"
       {% elif traefik_tls_provider == "cloudflare" %}
-- "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
+
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
       - "traefik.http.routers.{{ nc_router_traefik }}-https.entrypoints=websecure"
       - "traefik.http.routers.{{ nc_router_traefik }}-https.rule={{ nc_domains }}"
       - "traefik.http.routers.{{ nc_router_traefik }}-https.tls.certresolver=cloudflare"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.middlewares={{ nc_router_traefik }}-https@docker"
       {% endif %}
 
   redis:
