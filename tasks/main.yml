@@ -39,7 +39,7 @@
     path: "{{ site_working_directory }}/{{ nc_volume_config }}/config.php"
     marker: "# {mark} ANSIBLE MANAGED BLOCK - Trusted Proxies and Forwarded Headers"
     content: |
-      'trusted_proxies' => ['{{ traefik_container_ip.stdout }}'],
+      'trusted_proxies' => ['{{ traefik_container_ip.stdout }}', '{{ host_ip }}'],
       'forwarded_for_headers' => ['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP'],
     insertbefore: "^\\);$"
   tags:
