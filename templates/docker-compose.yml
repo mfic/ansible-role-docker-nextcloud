@@ -65,6 +65,9 @@ services:
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.stsSeconds=15552000"
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.stsIncludeSubdomains=true"
       - "traefik.http.middlewares.{{ nc_router_traefik }}-https.headers.stsPreload=true"
+      - "traefik.http.routers.{{ nc_router_traefik }}-https.middlewares={{ nc_router_traefik }}-dav"
+      - "traefik.http.middlewares.{{ nc_router_traefik }}-dav.replacepathregex.regex=^/.well-known/ca(l|rd)dav"
+      - "traefik.http.middlewares.{{ nc_router_traefik }}-dav.replacepathregex.replacement=/remote.php/dav/"
       {% if traefik_tls_provider == "letsencrypt" %}
 
       - "traefik.http.routers.{{ nc_router_traefik }}-https.tls=true"
